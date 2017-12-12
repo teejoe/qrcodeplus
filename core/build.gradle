@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.novoda.bintray-release'
 
 android {
     compileSdkVersion 25
@@ -8,7 +9,7 @@ android {
         minSdkVersion 14
         targetSdkVersion 25
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -42,4 +43,18 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:25.3.1'
     testCompile 'junit:junit:4.12'
+}
+
+publish {
+    bintrayUser = BINTRAY_USER
+    bintrayKey = BINTRAY_KEY
+    dryRun = false
+    userOrg = 'teejoe'
+    groupId = 'com.m2x.qrcodeplus'
+    artifactId = 'core'
+    version = '1.0.0'
+    description = 'QR code core library base on ZXing core'
+    website = 'https://github.com/teejoe/qrcodeplus'
+    issueTracker = "https://github.com/teejoe/qrcodeplus/issues"
+    repository = "https://github.com/teejoe/qrcodeplus.git"
 }

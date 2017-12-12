@@ -7,11 +7,23 @@ android {
         applicationId "com.m2x.qrcodeplusdemo"
         minSdkVersion 19
         targetSdkVersion 22
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    signingConfigs {
+        release {
+            keyAlias RELEASE_KEYSTORE_ALIAS
+            keyPassword RELEASE_KEY_PASSWORD
+            storeFile file(RELEASE_KEYSTORE_PATH)
+            storePassword RELEASE_KEYSTORE_PASSWORD
+        }
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }

@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.novoda.bintray-release'
 
 android {
     compileSdkVersion 26
@@ -9,7 +10,7 @@ android {
         minSdkVersion 14
         targetSdkVersion 26
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -31,4 +32,18 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     implementation project(':core')
+}
+
+publish {
+    bintrayUser = BINTRAY_USER
+    bintrayKey = BINTRAY_KEY
+    dryRun = false
+    userOrg = 'teejoe'
+    groupId = 'com.m2x.qrcodeplus'
+    artifactId = 'scanner'
+    version = '1.0.0'
+    description = 'QR code scanner helper library base on ZXing project'
+    website = 'https://github.com/teejoe/qrcodeplus'
+    issueTracker = "https://github.com/teejoe/qrcodeplus/issues"
+    repository = "https://github.com/teejoe/qrcodeplus.git"
 }
