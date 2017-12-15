@@ -30,7 +30,9 @@ import com.google.zxing.common.PerspectiveTransform;
 import com.google.zxing.common.detector.MathUtils;
 import com.google.zxing.qrcode.decoder.Version;
 
+import java.util.ArrayDeque;
 import java.util.Map;
+import java.util.Queue;
 
 /**
  * <p>Encapsulates logic that can detect a QR Code in an image, even if the QR Code
@@ -45,11 +47,14 @@ public class Detector {
     private DecodeState decodeState;
     private BaseFinderPatternFinder mFinderPatternFinder;
     private boolean isFinderPatternCredible;
-    private boolean needTryAlternateModuleSize;
-    private boolean needTryAlternateDimension;
-    private boolean triedAlternateModuleSize;
-    private boolean triedAlternateDimension;
+    private boolean triedNextPossibleModuleSize;
+    private Queue<PossibleParams> possibleParams = new ArrayDeque<>();
     private FinderPatternInfo mFinderPatternInfo;
+
+    private class PossibleParams {
+        public Float moduleSize;
+        public Integer dimension;
+    }
 
     public Detector(BitMatrix image) {
         this.image = image;
@@ -84,10 +89,8 @@ public class Detector {
      */
     public final DetectorResult detect(Map<DecodeHintType, ?> hints) throws NotFoundException, FormatException {
         isFinderPatternCredible = false;
-        needTryAlternateDimension = false;
-        needTryAlternateModuleSize = false;
-        triedAlternateDimension = false;
-        triedAlternateModuleSize = false;
+        possibleParams.clear();
+        triedNextPossibleModuleSize = false;
 
         resultPointCallback = hints == null ? null :
                 (ResultPointCallback) hints.get(DecodeHintType.NEED_RESULT_POINT_CALLBACK);
@@ -137,7 +140,7 @@ public class Detector {
             decodeState.previousFailureHint.finderPatternIncredible = true;
         }
 
-        return processFinderPatternInfo(mFinderPatternInfo);
+        return processFinderPatternInfo(mFinderPatternInfo, null);
     }
 
     public final boolean hasNextPossible() {
@@ -145,11 +148,7 @@ public class Detector {
             return false;
         }
 
-        if (needTryAlternateDimension && !triedAlternateModuleSize) {
-            return true;
-        }
-
-        if (needTryAlternateDimension && !triedAlternateDimension) {
+        if (!possibleParams.isEmpty()) {
             return true;
         }
 
@@ -158,18 +157,14 @@ public class Detector {
 
     public final DetectorResult detectNextPossible() throws NotFoundException, FormatException {
         if (!isFinderPatternCredible) {
-            return null;
+            throw NotFoundException.getNotFoundInstance();
         }
 
-        if (needTryAlternateModuleSize && !triedAlternateModuleSize) {
-            return processFinderPatternInfo(mFinderPatternInfo);
+        if (!possibleParams.isEmpty()) {
+            return processFinderPatternInfo(mFinderPatternInfo, possibleParams.poll());
         }
 
-        if (needTryAlternateDimension && !triedAlternateDimension) {
-            return processFinderPatternInfo(mFinderPatternInfo);
-        }
-
-        return null;
+        throw NotFoundException.getNotFoundInstance();
     }
 
     // if finder pattern forms a isosceles right triangle, it can be considered as credible,
@@ -199,35 +194,44 @@ public class Detector {
         return true;
     }
 
-    protected final DetectorResult processFinderPatternInfo(FinderPatternInfo info)
+    protected final DetectorResult processFinderPatternInfo(FinderPatternInfo info, PossibleParams params)
             throws NotFoundException, FormatException {
 
         FinderPattern topLeft = info.getTopLeft();
         FinderPattern topRight = info.getTopRight();
         FinderPattern bottomLeft = info.getBottomLeft();
 
-        float moduleSize = calculateModuleSize(topLeft, topRight, bottomLeft);
-
-        // add by Mao Tianjiao
-        if (needTryAlternateModuleSize && !triedAlternateModuleSize) {
-            Logging.d("try alternate module size");
-            moduleSize = (topLeft.getEstimatedModuleSize() + topRight.getEstimatedModuleSize()
-                    + bottomLeft.getEstimatedModuleSize()) / 3.0f;
-            triedAlternateModuleSize = true;
+        float moduleSize;
+        if (params != null && params.moduleSize != null) {
+            moduleSize = params.moduleSize;
+            Logging.d("try next possible module size:" + moduleSize);
+        } else {
+            moduleSize = calculateModuleSize(topLeft, topRight, bottomLeft);
+            if (!triedNextPossibleModuleSize) {
+                float estimateModuleSize = (topLeft.getEstimatedModuleSize() + topRight.getEstimatedModuleSize()
+                        + bottomLeft.getEstimatedModuleSize()) / 3.0f;
+                if (Math.abs(moduleSize - estimateModuleSize) / moduleSize > 0.1f) {
+                    PossibleParams possibleParam = new PossibleParams();
+                    possibleParam.moduleSize = estimateModuleSize;
+                    possibleParams.add(possibleParam);
+                }
+            }
+            Logging.d("module size:" + moduleSize);
         }
-        needTryAlternateModuleSize = true;
-        Logging.d("module size:" + moduleSize);
         //////////////////////
 
         if (moduleSize < 1.0f) {
             throw NotFoundException.getNotFoundInstance();
         }
-        int dimension = computeDimension(topLeft, topRight, bottomLeft, moduleSize, isFinderPatternCredible);
-        if (dimension < 21 && isFinderPatternCredible) {
-            dimension = 21;
+
+        int dimension;
+        if (params != null && params.dimension != null) {
+            Logging.d("try next possible dimension:" + params.dimension);
+            dimension = params.dimension;
+        } else {
+            dimension = computeDimension(topLeft, topRight, bottomLeft, moduleSize, isFinderPatternCredible);
         }
 
-        Logging.d("dimension:" + dimension);
         Version provisionalVersion = Version.getProvisionalVersionForDimension(dimension);
         int modulesBetweenFPCenters = provisionalVersion.getDimensionForVersion() - 7;
 
@@ -356,19 +360,22 @@ public class Detector {
             case 3:
                 if (tryHard) {
                     // added by mao tianjiao.
-                    if (needTryAlternateDimension) {
-                        Logging.d("dimension += 2");
-                        dimension += 2;
-                        triedAlternateDimension = true;
-                    } else {
-                        Logging.d("dimension -= 2");
-                        dimension -= 2;
-                    }
-                    needTryAlternateDimension = true;
+                    Logging.d("dimension += 2");
+                    dimension += 2;
+
+                    PossibleParams params = new PossibleParams();
+                    params.moduleSize = moduleSize;
+                    params.dimension = dimension - 4;
+                    possibleParams.add(params);
                 } else {
                     throw NotFoundException.getNotFoundInstance();
                 }
         }
+
+        if (tryHard && dimension < 21) {
+            dimension = 21;
+        }
+
         return dimension;
     }
 
