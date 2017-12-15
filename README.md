@@ -30,8 +30,8 @@ Minimum code for Gradle integration, place code in your `build.gradle`
 
 ```
 dependencies {
-    compile 'com.m2x.qrcodeplus:core:1.0.0'
-    compile 'com.m2x.qrcodeplus:scanner:1.0.0'
+    compile 'com.m2x.qrcodeplus:core:1.0.1'
+    compile 'com.m2x.qrcodeplus:scanner:1.0.1'
 }
 ```
 

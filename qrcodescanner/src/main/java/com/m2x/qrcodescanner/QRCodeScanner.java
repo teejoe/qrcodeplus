@@ -11,7 +11,6 @@ import android.view.SurfaceView;
 
 import com.google.zxing.Logging;
 import com.google.zxing.Result;
-import com.m2x.qrcodescanner.R;
 import com.m2x.qrcodescanner.camera.CameraManager;
 
 import java.io.IOException;
