@@ -9,8 +9,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 26
-        versionCode 2
-        versionName "1.0.1"
+        versionCode 3
+        versionName "1.0.2"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -27,7 +27,6 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:appcompat-v7:26.1.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
@@ -41,7 +40,7 @@ publish {
     userOrg = 'teejoe'
     groupId = 'com.m2x.qrcodeplus'
     artifactId = 'scanner'
-    version = '1.0.1'
+    version = '1.0.2'
     description = 'QR code scanner helper library base on ZXing project'
     website = 'https://github.com/teejoe/qrcodeplus'
     issueTracker = "https://github.com/teejoe/qrcodeplus/issues"
