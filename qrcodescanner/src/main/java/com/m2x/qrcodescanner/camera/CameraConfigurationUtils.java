@@ -310,16 +310,10 @@ public final class CameraConfigurationUtils {
             }
 
             boolean isCandidatePortrait = realWidth < realHeight;
-            int maybeFlippedWidth = isCandidatePortrait ? realHeight : realWidth;
-            int maybeFlippedHeight = isCandidatePortrait ? realWidth : realHeight;
+            int maybeFlippedWidth = isCandidatePortrait ? realWidth : realHeight;
+            int maybeFlippedHeight = isCandidatePortrait ? realHeight : realWidth;
 
             if (maybeFlippedWidth == screenResolution.x && maybeFlippedHeight == screenResolution.y) {
-                Point exactPoint = new Point(realWidth, realHeight);
-                Log.i(TAG, "Found preview size exactly matching screen size: " + exactPoint);
-                return exactPoint;
-            }
-
-            if (maybeFlippedWidth == screenResolution.y && maybeFlippedHeight == screenResolution.x) {
                 Point exactPoint = new Point(realWidth, realHeight);
                 Log.i(TAG, "Found preview size exactly matching screen size: " + exactPoint);
                 return exactPoint;

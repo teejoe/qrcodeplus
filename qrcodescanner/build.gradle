@@ -9,8 +9,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 26
-        versionCode 3
-        versionName "1.0.2"
+        versionCode 4
+        versionName "1.0.3"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -40,7 +40,7 @@ publish {
     userOrg = 'teejoe'
     groupId = 'com.m2x.qrcodeplus'
     artifactId = 'scanner'
-    version = '1.0.2'
+    version = '1.0.3'
     description = 'QR code scanner helper library base on ZXing project'
     website = 'https://github.com/teejoe/qrcodeplus'
     issueTracker = "https://github.com/teejoe/qrcodeplus/issues"
