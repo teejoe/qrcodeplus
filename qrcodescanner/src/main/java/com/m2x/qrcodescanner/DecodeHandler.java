@@ -91,6 +91,9 @@ final class DecodeHandler extends Handler {
         Logging.d("decode round:" + mDecodeState.currentRound);
         Result rawResult = null;
         PlanarYUVLuminanceSource source = scanner.getCameraManager().buildLuminanceSource(data, width, height);
+        if (source == null) {
+            return;
+        }
         LuminanceSource processedSource = source;
         if (mDecodeState.previousFailureHint.lowContrastImage) {
             // increase contrast.
