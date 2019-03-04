@@ -92,6 +92,11 @@ final class DecodeHandler extends Handler {
         Result rawResult = null;
         PlanarYUVLuminanceSource source = scanner.getCameraManager().buildLuminanceSource(data, width, height);
         if (source == null) {
+            Handler handler = scanner.getHandler();
+            if (handler != null) {
+                Message message = Message.obtain(handler, R.id.decode_failed);
+                message.sendToTarget();
+            }
             return;
         }
         LuminanceSource processedSource = source;
