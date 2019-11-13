@@ -81,14 +81,18 @@ public class ViewfinderView extends View {
         public boolean onScale(ScaleGestureDetector detector) {
             if (cameraManager == null) return false;
 
-            int currentZoom = cameraManager.getZoom();
-            if (detector.getScaleFactor() > 1.0f) {
-                currentZoom++;
-            } else {
-                currentZoom--;
+            try {
+                int currentZoom = cameraManager.getZoom();
+                if (detector.getScaleFactor() > 1.0f) {
+                    currentZoom++;
+                } else {
+                    currentZoom--;
+                }
+                cameraManager.setZoom(currentZoom);
+                return true;
+            } catch (Exception e) {
+                return false;
             }
-            cameraManager.setZoom(currentZoom);
-            return true;
         }
     }
 
